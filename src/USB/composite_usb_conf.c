@@ -509,12 +509,6 @@ static const struct usb_device_capability_descriptor* capabilities[] = {
 static const struct usb_bos_descriptor bos_descriptor = {
     .bLength = USB_DT_BOS_SIZE,
     .bDescriptorType = USB_DT_BOS,
-    .wTotalLength = (USB_DT_BOS_SIZE
-                   + (WINUSB_AVAILABLE ? (WINUSB_PLATFORM_DESCRIPTOR_HEADER_SIZE +
-                                           1*WINUSB_DESCRIPTOR_SET_INFORMATION_SIZE)
-                                        : 0)
-                   + (WEBUSB_AVAILABLE ? WEBUSB_PLATFORM_DESCRIPTOR_SIZE
-                                         : 0)),
     .bNumDeviceCaps = sizeof(capabilities)/sizeof(capabilities[0]),
     .capabilities = capabilities
 };
