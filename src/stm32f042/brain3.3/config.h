@@ -51,6 +51,7 @@
 #define nBOOT0_GPIO_PIN  GPIO8
 
 #define WINUSB_AVAILABLE 0
+#define WEBUSB_AVAILABLE 0
 
 #include <libopencm3/stm32/usart.h>
 /* Workaround for non-commonalized STM32F0 USART code */

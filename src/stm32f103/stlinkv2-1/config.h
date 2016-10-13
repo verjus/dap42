@@ -47,6 +47,7 @@
 #define CONSOLE_USART_NVIC_LINE NVIC_USART1_IRQ
 
 #define WINUSB_AVAILABLE 1
+#define WEBUSB_AVAILABLE 0
 
 /* Word size for usart_recv and usart_send */
 typedef uint16_t usart_word_t;

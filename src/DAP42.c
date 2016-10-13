@@ -30,6 +30,7 @@
 #include "USB/vcdc.h"
 #include "USB/dfu.h"
 #include "USB/winusb.h"
+#include "USB/webusb.h"
 
 #include "DAP/app.h"
 #include "DAP/CMSIS_DAP_hal.h"
@@ -115,12 +116,22 @@ int main(void) {
         vcdc_app_setup(usbd_dev, &on_usb_activity, &on_usb_activity);
     }
 
-    if (DFU_AVAILABLE) {
+#if DFU_AVAILABLE
+    {
         dfu_setup(usbd_dev, &on_dfu_request);
         if (WINUSB_AVAILABLE) {
             winusb_setup(usbd_dev);
         }
+        if (WEBUSB_AVAILABLE) {
+            static const char* origin_urls[] = {
+                "devanlai.github.io/webdfu/dfu-util/"
+            };
+            webusb_setup(usbd_dev,
+                         origin_urls, sizeof(origin_urls)/sizeof(origin_urls[0]),
+                         INTF_DFU);
+        }
     }
+#endif
 
     tick_start();
 

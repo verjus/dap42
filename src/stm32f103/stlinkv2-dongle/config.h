@@ -49,6 +49,7 @@
 #define TARGET_DFU_AVAILABLE 0
 
 #define WINUSB_AVAILABLE 1
+#define WEBUSB_AVAILABLE 1
 
 /* Word size for usart_recv and usart_send */
 typedef uint16_t usart_word_t;

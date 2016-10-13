@@ -35,6 +35,10 @@
 #include "cdc.h"
 #include "vcdc.h"
 
+#include "usb21_standard.h"
+#include "winusb.h"
+#include "webusb.h"
+
 #include "config.h"
 
 #define NUM_OUT_ENDPOINTS (HIGHEST_OUT_ENDPOINT - 1)
@@ -44,11 +48,16 @@
 _Static_assert((1 + NUM_IN_ENDPOINTS <= 8), "Too many IN endpoints for USB core (max 8)");
 _Static_assert((1 + NUM_OUT_ENDPOINTS <= 8), "Too many OUT endpoints for USB core (max 8)");
 
+#if (DFU_AVAILABLE && (WINUSB_AVAILABLE || WEBUSB_AVAILABLE))
+#define USB_VERSION 0x0210
+#else
+#define USB_VERSION 0x0200
+#endif
 
 static const struct usb_device_descriptor dev = {
     .bLength = USB_DT_DEVICE_SIZE,
     .bDescriptorType = USB_DT_DEVICE,
-    .bcdUSB = 0x0210,
+    .bcdUSB = USB_VERSION,
     .bDeviceClass = USB_CLASS_MISCELLANEOUS_DEVICE,
     .bDeviceSubClass = USB_MISC_SUBCLASS_COMMON,
     .bDeviceProtocol = USB_MISC_PROTOCOL_INTERFACE_ASSOCIATION_DESCRIPTOR,
@@ -487,6 +496,30 @@ static void cmp_usb_set_config(usbd_device* usbd_dev, uint16_t wValue) {
     }
 }
 
+#if (USB_VERSION >= 0x0210)
+static const struct usb_device_capability_descriptor* capabilities[] = {
+#if WINUSB_AVAILABLE
+    (const struct usb_device_capability_descriptor*)&winusb_platform_capability_descriptor,
+#endif
+#if WEBUSB_AVAILABLE
+    (const struct usb_device_capability_descriptor*)&webusb_platform_capability_descriptor,
+#endif
+};
+
+static const struct usb_bos_descriptor bos_descriptor = {
+    .bLength = USB_DT_BOS_SIZE,
+    .bDescriptorType = USB_DT_BOS,
+    .wTotalLength = (USB_DT_BOS_SIZE
+                   + (WINUSB_AVAILABLE ? (WINUSB_PLATFORM_DESCRIPTOR_HEADER_SIZE +
+                                           1*WINUSB_DESCRIPTOR_SET_INFORMATION_SIZE)
+                                        : 0)
+                   + (WEBUSB_AVAILABLE ? WEBUSB_PLATFORM_DESCRIPTOR_SIZE
+                                         : 0)),
+    .bNumDeviceCaps = sizeof(capabilities)/sizeof(capabilities[0]),
+    .capabilities = capabilities
+};
+#endif
+
 usbd_device* cmp_usb_setup(void) {
     int num_strings = sizeof(usb_strings)/sizeof(const char*);
 
@@ -496,5 +529,10 @@ usbd_device* cmp_usb_setup(void) {
                                       usbd_control_buffer, sizeof(usbd_control_buffer));
     usbd_register_set_config_callback(usbd_dev, cmp_usb_set_config);
     usbd_register_reset_callback(usbd_dev, cmp_usb_handle_reset);
+
+#if (USB_VERSION >= 0x0210)
+    usb21_setup(usbd_dev, &bos_descriptor);
+#endif
+    
     return usbd_dev;
 }

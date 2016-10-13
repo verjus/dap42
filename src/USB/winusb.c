@@ -106,22 +106,7 @@ static void winusb_set_config(usbd_device* usbd_dev, uint16_t wValue) {
         winusb_control_vendor_request);
 }
 
-static const struct usb_device_capability_descriptor* capabilities[] = {
-    (const struct usb_device_capability_descriptor*)&winusb_platform_capability_descriptor,
-};
-
-static const struct usb_bos_descriptor winusb_bos_descriptor = {
-    .bLength = USB_DT_BOS_SIZE,
-    .bDescriptorType = USB_DT_BOS,
-    .wTotalLength = (USB_DT_BOS_SIZE +
-                     WINUSB_PLATFORM_DESCRIPTOR_HEADER_SIZE +
-                     1*WINUSB_DESCRIPTOR_SET_INFORMATION_SIZE),
-    .bNumDeviceCaps = 1,
-    .capabilities = capabilities
-};
-
 void winusb_setup(usbd_device* usbd_dev) {
-    usb21_setup(usbd_dev, &winusb_bos_descriptor);
     usbd_register_set_config_callback(usbd_dev, winusb_set_config);
 
     /* Windows probes the compatible ID before setting the configuration,
