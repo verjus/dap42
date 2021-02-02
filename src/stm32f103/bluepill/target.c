@@ -45,7 +45,14 @@ void gpio_setup(void) {
     rcc_periph_clock_enable(RCC_GPIOA);
     rcc_periph_clock_enable(RCC_GPIOB);
     rcc_periph_clock_enable(RCC_GPIOC);
-
+    
+#ifndef USE_SWD
+    /* enable alternate function io clock */
+    rcc_periph_clock_enable(RCC_AFIO);
+    /* Disable SWD and JTAG to allow full use of the ports PA13, PA14, PA15 */
+    gpio_primary_remap(AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF, 0);
+#endif
+    
     /* Setup LEDs as open-drain outputs */
     const uint8_t mode = GPIO_MODE_OUTPUT_10_MHZ;
     const uint8_t conf = (LED_OPEN_DRAIN ? GPIO_CNF_OUTPUT_OPENDRAIN
